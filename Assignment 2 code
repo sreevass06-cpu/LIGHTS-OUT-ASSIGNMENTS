@@ -1,0 +1,168 @@
+CODE
+
+module fsm(
+input R,input S,
+input clk,
+input reset,
+output reg W,
+output reg L);
+parameter [2:0] s0=0,s1=1,s2=2,s3=3,s4=4;
+reg [2:0] cur_state,next_state;
+
+always @ (*)
+begin
+next_state=s0;
+case (cur_state)
+s0:begin
+if (!R & !S) next_state=s0;
+else if (!R & S) next_state=s1;
+else if (R & !S) next_state=s4;
+end
+
+s1:begin
+if (!R & !S) next_state=s4;
+else if (!R & S) next_state=s1;
+else if (R & !S) next_state=s2;
+end
+s2:begin
+if (!R & !S) next_state=s4;
+else if (!R & S) next_state=s3;
+else if (R & !S) next_state=s3;
+end
+s3:begin
+if (!R & !S) next_state=s4;
+else if (!R & S) next_state=s0;
+else if (R & !S) next_state=s4;
+end
+s4:begin
+if (!R & !S) next_state=s0;
+else if (!R & S) next_state=s4;
+else if (R & !S) next_state=s4;
+end
+endcase
+end
+
+always @ (posedge clk) begin
+if (reset)
+cur_state<=s0;
+else cur_state<=next_state;
+end
+
+always @ (*)
+begin
+case (cur_state) 
+s0:begin
+if (!R & !S) begin W=0;L=0;end
+else if (!R & S) begin W=0;L=0;end
+else if (R & !S) begin W=0;L=1;end
+end
+
+s1:begin
+if (!R & !S) begin W=0;L=1;end
+else begin W=0;L=0;end
+end
+s2:begin
+if (!R & !S) begin W=0;L=1;end
+else begin W=0;L=0;end
+end
+s3:begin
+if (!R & !S) begin W=0;L=1;end
+else if (!R & S) begin W=1;L=0;end
+else if (R & !S) begin W=0;L=1;end
+end
+s4:begin
+if (!R & !S) begin W=0;L=0;end
+else if (!R & S) begin W=0;L=1;end
+else if (R & !S) begin W=0;L=1;end
+end
+endcase
+end
+endmodule
+
+
+
+
+TESTBENCH
+
+
+`timescale 1ns / 1ps
+module lights_out_tb;
+
+reg R, S;
+reg clk;
+reg reset;
+wire W;
+wire L;
+
+
+fsm dut (
+  .R(R),
+  .S(S),
+  .clk(clk),
+  .reset(reset),
+  .W(W),
+  .L(L)
+);
+
+
+initial begin
+  clk = 0;
+  forever #5 clk = ~clk;
+end
+
+
+initial begin
+  
+  reset = 1;
+  R = 0;
+  S = 0;
+  
+  #10 reset = 0;
+  #10 R = 1; S = 0;
+  #20 R = 0; S = 0;
+  #10 R = 0; S = 1;
+  #10 R = 1; S = 0;
+  #10 R = 0; S = 1;
+  #20 R = 0; S = 1;
+  #10 R=0;S=0;
+  
+  #10 $finish; 
+end
+
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SIMULATION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
